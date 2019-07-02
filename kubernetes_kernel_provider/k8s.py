@@ -9,8 +9,7 @@ import re
 import urllib3
 from kubernetes import client, config
 
-from .container import ContainerProcessProxy
-from ..sessions.kernelsessionmanager import KernelSessionManager
+from remote_kernel_provider.container import ContainerKernelLifecycleManager
 
 urllib3.disable_warnings()
 
@@ -25,10 +24,10 @@ share_gateway_namespace = bool(os.environ.get('EG_SHARED_NAMESPACE', 'False').lo
 config.load_incluster_config()
 
 
-class KubernetesProcessProxy(ContainerProcessProxy):
+class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
     """Kernel lifecycle management for Kubernetes kernels."""
-    def __init__(self, kernel_manager, proxy_config):
-        super(KubernetesProcessProxy, self).__init__(kernel_manager, proxy_config)
+    def __init__(self, kernel_manager, lifecycle_config):
+        super(KubernetesKernelLifecycleManager, self).__init__(kernel_manager, lifecycle_config)
 
         self.kernel_pod_name = None
         self.kernel_namespace = None
@@ -44,7 +43,7 @@ class KubernetesProcessProxy(ContainerProcessProxy):
         self.kernel_pod_name = self._determine_kernel_pod_name(**kwargs)
         self.kernel_namespace = self._determine_kernel_namespace(**kwargs)  # will create namespace if not provided
 
-        return super(KubernetesProcessProxy, self).launch_process(kernel_cmd, **kwargs)
+        return super(KubernetesKernelLifecycleManager, self).launch_process(kernel_cmd, **kwargs)
 
     def get_initial_states(self):
         """Return list of states indicating container is starting (includes running)."""
@@ -116,19 +115,19 @@ class KubernetesProcessProxy(ContainerProcessProxy):
                 self.log.warning("Error occurred deleting {}: {}".format(object_name, err))
 
         if result:
-            self.log.debug("KubernetesProcessProxy.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
+            self.log.debug("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
                            "been terminated.".format(self.kernel_namespace, self.container_name, self.kernel_id))
             self.container_name = None
             result = None  # maintain jupyter contract
         else:
-            self.log.warning("KubernetesProcessProxy.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
+            self.log.warning("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
                              "not been terminated.".format(self.kernel_namespace, self.container_name, self.kernel_id))
         return result
 
     def _determine_kernel_pod_name(self, **kwargs):
         pod_name = kwargs['env'].get('KERNEL_POD_NAME')
         if pod_name is None:
-            pod_name = KernelSessionManager.get_kernel_username(**kwargs) + '-' + self.kernel_id
+            pod_name = self.kernel_manager.kernel_username + '-' + self.kernel_id
 
         # Rewrite pod_name to be compatible with DNS name convention
         # And put back into env since kernel needs this
@@ -145,7 +144,7 @@ class KubernetesProcessProxy(ContainerProcessProxy):
 
         # Since we need the service account name regardless of whether we're creating the namespace or not,
         # get it now.
-        service_account_name = KubernetesProcessProxy._determine_kernel_service_account_name(**kwargs)
+        service_account_name = KubernetesKernelLifecycleManager._determine_kernel_service_account_name(**kwargs)
 
         # If KERNEL_NAMESPACE was provided, then we assume it already exists.  If not provided, then we'll
         # create the namespace and record that we'll want to delete it as well.
@@ -236,14 +235,14 @@ class KubernetesProcessProxy(ContainerProcessProxy):
         self.log.info("Created kernel role-binding '{}' in namespace: {} for service account: {}".
                       format(role_binding_name, namespace, service_account_name))
 
-    def get_process_info(self):
+    def get_lifecycle_info(self):
         """Captures the base information necessary for kernel persistence relative to kubernetes."""
-        process_info = super(KubernetesProcessProxy, self).get_process_info()
-        process_info.update({'kernel_ns': self.kernel_namespace, 'delete_ns': self.delete_kernel_namespace})
-        return process_info
+        lifecycle_info = super(KubernetesKernelLifecycleManager, self).get_lifecycle_info()
+        lifecycle_info.update({'kernel_ns': self.kernel_namespace, 'delete_ns': self.delete_kernel_namespace})
+        return lifecycle_info
 
-    def load_process_info(self, process_info):
+    def load_lifecycle_info(self, lifecycle_info):
         """Loads the base information necessary for kernel persistence relative to kubernetes."""
-        super(KubernetesProcessProxy, self).load_process_info(process_info)
-        self.kernel_namespace = process_info['kernel_ns']
-        self.delete_kernel_namespace = process_info['delete_ns']
+        super(KubernetesKernelLifecycleManager, self).load_lifecycle_info(lifecycle_info)
+        self.kernel_namespace = lifecycle_info['kernel_ns']
+        self.delete_kernel_namespace = lifecycle_info['delete_ns']

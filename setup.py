@@ -71,16 +71,17 @@ setup_args = dict(
     },
     entry_points={
         'console_scripts': [
-            'kubernetes_kernel_provider=kubernetes_kernel_provider.kernelspecapp:main',
+            'jupyter-k8s-kernelspec = kubernetes_kernel_provider.kernelspecapp:KubernetesKernelProviderApp.launch_instance',
         ],
         'jupyter_kernel_mgmt.kernel_type_providers': [
-            'k8s = kubernetes_kernel_provider.provider:KubernetesKernelProvider',
+            'k8skp = kubernetes_kernel_provider.provider:KubernetesKernelProvider',
         ]
     },
     python_requires = ">=3.4",
     cmdclass         = {
         'bdist_egg': bdist_egg if 'bdist_egg' in sys.argv else bdist_egg_disabled,
     },
+    include_package_data = True,
 )
 
 if __name__ == '__main__':

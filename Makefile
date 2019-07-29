@@ -51,16 +51,13 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 kubernetes_kernel_provider tests
+	flake8 kubernetes_kernel_provider
 
 test: ## run tests quickly with the default Python
-	python setup.py test
-
-test-all: ## run tests on every Python version with tox
-	tox
+	pytest -v --cov kubernetes_kernel_provider kubernetes_kernel_provider
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source kubernetes_kernel_provider setup.py test
+	coverage run --source kubernetes_kernel_provider setup.py
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html

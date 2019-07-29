@@ -115,13 +115,14 @@ class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
                 self.log.warning("Error occurred deleting {}: {}".format(object_name, err))
 
         if result:
-            self.log.debug("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
-                           "been terminated.".format(self.kernel_namespace, self.container_name, self.kernel_id))
+            self.log.debug("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, kernel ID: {} "
+                           "has been terminated.".format(self.kernel_namespace, self.container_name, self.kernel_id))
             self.container_name = None
             result = None  # maintain jupyter contract
         else:
-            self.log.warning("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, kernel ID: {} has "
-                             "not been terminated.".format(self.kernel_namespace, self.container_name, self.kernel_id))
+            self.log.warning("KubernetesKernelLifecycleManager.terminate_container_resources, pod: {}.{}, "
+                             "kernel ID: {} has not been terminated.".format(self.kernel_namespace,
+                                                                             self.container_name, self.kernel_id))
         return result
 
     def _determine_kernel_pod_name(self, **kwargs):

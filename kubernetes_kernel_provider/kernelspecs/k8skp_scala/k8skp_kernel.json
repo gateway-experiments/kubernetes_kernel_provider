@@ -1,0 +1,22 @@
+{
+  "language": "scala",
+  "display_name": "${display_name}",
+  "metadata": {
+    "lifecycle_manager": {
+      "class_name": "kubernetes_kernel_provider.k8s.KubernetesKernelLifecycleManager",
+      "config": {
+        "image_name": "${image_name}"
+      }
+    }
+  },
+  "env": {
+  },
+  "argv": [
+    "python",
+    "${install_dir}/scripts/launch_kubernetes.py",
+    "--RemoteProcessProxy.kernel-id",
+    "{kernel_id}",
+    "--RemoteProcessProxy.response-address",
+    "{response_address}"
+  ]
+}

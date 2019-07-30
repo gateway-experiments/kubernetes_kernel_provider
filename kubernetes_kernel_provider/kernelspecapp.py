@@ -66,8 +66,6 @@ class K8SKP_SpecInstaller(JupyterApp):
     def _kernel_spec_manager_default(self):
         return KernelSpecManager(kernel_file=KubernetesKernelProvider.kernel_file)
 
-    source_dir = Unicode()
-    staging_dir = Unicode()
     template_dir = Unicode()
 
     kernel_name = Unicode(DEFAULT_KERNEL_NAMES[DEFAULT_LANGUAGE], config=True,
@@ -152,16 +150,21 @@ class K8SKP_SpecInstaller(JupyterApp):
         self._validate_parameters()
 
         # create staging dir
-        self.staging_dir = spec_utils.create_staging_directory()
+        staging_dir = spec_utils.create_staging_directory()
 
         # copy files from installed area to staging dir
-        self.source_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'kernelspecs', self.template_dir))
-        dir_util.copy_tree(src=self.source_dir, dst=self.staging_dir)
-        spec_utils.copy_kernelspec_files(self.staging_dir, launcher_type='kubernetes',
+        source_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'kernelspecs', self.template_dir))
+        dir_util.copy_tree(src=source_dir, dst=staging_dir)
+
+        source_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'pod-launcher'))
+        dir_util.copy_tree(src=source_dir, dst=staging_dir)
+
+        # copy appropriate resource files
+        spec_utils.copy_kernelspec_files(staging_dir, launcher_type=None,
                                          resource_type=TENSORFLOW if self.tensorflow else self.language)
         # install to destination
         self.log.info("Installing Kubernetes Kernel Provider kernel specification for '{}'".format(self.display_name))
-        install_dir = self.kernel_spec_manager.install_kernel_spec(self.staging_dir,
+        install_dir = self.kernel_spec_manager.install_kernel_spec(staging_dir,
                                                                    kernel_name=self.kernel_name,
                                                                    user=self.user,
                                                                    prefix=self.prefix)

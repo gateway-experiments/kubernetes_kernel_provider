@@ -4,6 +4,7 @@ include LICENSE
 include README.rst
 
 recursive-include kubernetes_kernel_provider/kernelspecs *
+recursive-include kubernetes_kernel_provider/pod-launcher *
 recursive-include kubernetes_kernel_provider/tests *
 
 recursive-exclude * __pycache__

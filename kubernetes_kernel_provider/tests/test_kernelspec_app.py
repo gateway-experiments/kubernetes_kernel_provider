@@ -107,6 +107,12 @@ def test_create_python_kernelspec(script_runner, mock_kernels_dir):
     assert os.path.isdir(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel'))
     assert os.path.isfile(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel', 'k8skp_kernel.json'))
 
+    assert os.path.isdir(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel', 'scripts'))
+    assert os.path.isfile(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel', 'scripts',
+                                       'launch_kubernetes.py'))
+    assert os.path.isfile(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel', 'scripts',
+                                       'kernel-pod.yaml.j2'))
+
     with open(os.path.join(mock_kernels_dir, 'kernels', 'my_python_kernel', 'k8skp_kernel.json'), "r") as fd:
         kernel_json = json.load(fd)
         assert kernel_json["display_name"] == 'My Python Kernel'

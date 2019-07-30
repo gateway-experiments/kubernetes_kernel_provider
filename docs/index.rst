@@ -8,7 +8,6 @@ Welcome to Kubernetes Kernel Provider's documentation!
    readme
    installation
    usage
-   modules
    contributing
    history
 

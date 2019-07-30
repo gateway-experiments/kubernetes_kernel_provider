@@ -93,21 +93,15 @@ class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
         try:
             # What gets returned from this call is a 'V1Status'.  It looks a bit like JSON but appears to be
             # intentionally obfuscated.  Attempts to load the status field fail due to malformed json.  As a
-            # result, we'll see if the status field contains either 'Succeeded' or 'Failed' - since that should
-            # indicate the phase value.
+            # result, we'll rely on the fact that the api will raise exceptions on failure and we'll tolerate
+            # 404 (for this case).
 
             if self.delete_kernel_namespace and not self.kernel_manager.restarting:
-                v1_status = client.CoreV1Api().delete_namespace(name=self.kernel_namespace, body=body)
+                client.CoreV1Api().delete_namespace(name=self.kernel_namespace, body=body)
             else:
-                v1_status = client.CoreV1Api().delete_namespaced_pod(namespace=self.kernel_namespace,
-                                                                     body=body, name=self.container_name)
-            if v1_status and v1_status.status:
-                termination_stati = ['Succeeded', 'Failed', 'Terminating']
-                if any(status in v1_status.status for status in termination_stati):
-                    result = True
-
-            if not result:
-                self.log.warning("Unable to delete {}: {}".format(object_name, v1_status))
+                client.CoreV1Api().delete_namespaced_pod(namespace=self.kernel_namespace,
+                                                         body=body, name=self.container_name)
+            result = True
         except Exception as err:
             if isinstance(err, client.rest.ApiException) and err.status == 404:
                 result = True  # okay if its not found

@@ -61,10 +61,10 @@ setup_args = dict(
         'Programming Language :: Python :: 3',
     ],
     install_requires = [
-        'remote_kernel_provider',
-        'jupyter_kernel_mgmt',
         'entrypoints',
-	    'kubernetes>=4.0.0',
+        'kubernetes>=4.0.0',
+        'jupyter_kernel_mgmt>=0.4.0',
+        'remote_kernel_provider>=0.2.0',
     ],
     extras_require   = {
         'test': ['mock', 'pytest'],

@@ -1,4 +1,5 @@
 """Provides support for launching and managing kernels within a Kubernetes cluster."""
+import asyncio
 import os
 from datetime import datetime
 from kubernetes import config
@@ -17,6 +18,7 @@ class KubernetesKernelProvider(RemoteKernelProviderBase):
     kernel_file = 'k8skp_kernel.json'
     lifecycle_manager_classes = ['kubernetes_kernel_provider.k8s.KubernetesKernelLifecycleManager']
 
+    @asyncio.coroutine
     def find_kernels(self):
         """ Ensures the provider is running within a Kubernetes cluster.  If not, it will
             log a warning message and no kernelspecs will be returned.  Since find_kernels()

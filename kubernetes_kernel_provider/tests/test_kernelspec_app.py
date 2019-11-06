@@ -10,7 +10,7 @@ import shutil
 from tempfile import mkdtemp
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def mock_kernels_dir():
     kernels_dir = mkdtemp(prefix="kernels_")
     orig_data_dir = os.environ.get("JUPYTER_DATA_DIR")
@@ -23,7 +23,6 @@ def mock_kernels_dir():
         os.environ.pop("JUPYTER_DATA_DIR")
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_no_opts(script_runner):
     ret = script_runner.run('jupyter-k8s-kernelspec')
     assert ret.success is False
@@ -31,7 +30,6 @@ def test_no_opts(script_runner):
     assert ret.stderr == ''
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_bad_subcommand(script_runner):
     ret = script_runner.run('jupyter', 'k8s-kernelspec', 'bogus-subcommand')
     assert ret.success is False
@@ -39,7 +37,6 @@ def test_bad_subcommand(script_runner):
     assert ret.stderr == ''
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_help_all(script_runner):
     ret = script_runner.run('jupyter-k8s-kernelspec', 'install', '--help-all')
     assert ret.success
@@ -47,7 +44,6 @@ def test_help_all(script_runner):
     assert ret.stderr == ''
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_bad_argument(script_runner):
     ret = script_runner.run('jupyter-k8s-kernelspec', 'install', '--bogus-argument')
     assert ret.success is False
@@ -55,7 +51,6 @@ def test_bad_argument(script_runner):
     assert "[K8SKP_SpecInstaller] CRITICAL | Unrecognized flag: \'--bogus-argument\'" in ret.stderr
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_mutually_exclusive(script_runner):
     ret = script_runner.run('jupyter-k8s-kernelspec', 'install', '--spark', '--tensorflow')
     assert ret.success is False
@@ -63,7 +58,6 @@ def test_mutually_exclusive(script_runner):
     assert "[K8SKP_SpecInstaller] ERROR | Tensorflow support is mutually exclusive with Spark support." in ret.stderr
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_bad_language(script_runner):
     ret = script_runner.run('jupyter-k8s-kernelspec', 'install', '--language=R', '--tensorflow')
     assert ret.success is False
@@ -71,7 +65,6 @@ def test_bad_language(script_runner):
     assert "[K8SKP_SpecInstaller] ERROR | Tensorflow support is only available for use by Python kernels." in ret.stderr
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_create_kernelspec(script_runner, mock_kernels_dir):
     my_env = os.environ.copy()
     my_env.update({"JUPYTER_DATA_DIR": mock_kernels_dir})
@@ -93,7 +86,6 @@ def test_create_kernelspec(script_runner, mock_kernels_dir):
             'elyra/kernel-spark-py:dev'
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_create_python_kernelspec(script_runner, mock_kernels_dir):
     my_env = os.environ.copy()
     my_env.update({"JUPYTER_DATA_DIR": mock_kernels_dir})
@@ -120,7 +112,6 @@ def test_create_python_kernelspec(script_runner, mock_kernels_dir):
         assert kernel_json["metadata"]["lifecycle_manager"]["config"]["image_name"] == 'foo/bar:zed'
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_create_r_kernelspec(script_runner, mock_kernels_dir):
     my_env = os.environ.copy()
     my_env.update({"JUPYTER_DATA_DIR": mock_kernels_dir})
@@ -142,7 +133,6 @@ def test_create_r_kernelspec(script_runner, mock_kernels_dir):
         assert argv[len(argv) - 1] == 'lazy'
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_create_scala_kernelspec(script_runner, mock_kernels_dir):
     my_env = os.environ.copy()
     my_env.update({"JUPYTER_DATA_DIR": mock_kernels_dir})
@@ -163,7 +153,6 @@ def test_create_scala_kernelspec(script_runner, mock_kernels_dir):
         assert '--MyExtraSparkOpts' in kernel_json["env"]["__TOREE_SPARK_OPTS__"]
 
 
-@pytest.mark.script_launch_mode('subprocess')
 def test_create_tensorflow_kernelspec(script_runner, mock_kernels_dir):
     my_env = os.environ.copy()
     my_env.update({"JUPYTER_DATA_DIR": mock_kernels_dir})

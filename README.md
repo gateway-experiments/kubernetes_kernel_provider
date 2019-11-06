@@ -13,7 +13,7 @@ The Kubernetes Kernel Provider package provides support necessary for launching 
 pip install kubenetes_kernel_provider
 ```
 
-##Usage
+## Usage
 Because this version of Jupyter kernel management is still in its experimental stages, a [special branch of Notebook](https://github.com/takluyver/notebook/tree/jupyter-kernel-mgmt) is required, which includes the machinery to leverage the new framework.  An installable build of this branch is available as an asset on the [interim-dev release](https://github.com/gateway-experiments/remote_kernel_provider/releases/tag/v0.1-interim-dev) of the Remote Kernel Provider on which Kubernetes Kernel Provider depends.
 
 ### Kubernetes Kernel Specifications

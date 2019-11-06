@@ -63,11 +63,11 @@ setup_args = dict(
     install_requires = [
         'entrypoints',
         'kubernetes>=4.0.0',
-        'jupyter_kernel_mgmt>=0.4.0',
-        'remote_kernel_provider>=0.2.0',
+        'jupyter_kernel_mgmt>=0.5.0',
+        'remote_kernel_provider>=0.3.0',
     ],
     extras_require   = {
-        'test': ['mock', 'pytest'],
+        'test': ['mock', 'pytest', 'pytest-console-scripts'],
     },
     entry_points={
         'console_scripts': [
@@ -77,7 +77,7 @@ setup_args = dict(
             'k8skp = kubernetes_kernel_provider.provider:KubernetesKernelProvider',
         ]
     },
-    python_requires = ">=3.4",
+    python_requires = ">=3.5",
     cmdclass         = {
         'bdist_egg': bdist_egg if 'bdist_egg' in sys.argv else bdist_egg_disabled,
     },

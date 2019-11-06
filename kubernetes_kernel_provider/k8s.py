@@ -19,7 +19,11 @@ logging.getLogger('kubernetes').setLevel(os.environ.get('EG_KUBERNETES_LOG_LEVEL
 enterprise_gateway_namespace = os.environ.get('EG_NAMESPACE', 'default')
 default_kernel_service_account_name = os.environ.get('EG_DEFAULT_KERNEL_SERVICE_ACCOUNT_NAME', 'default')
 kernel_cluster_role = os.environ.get('EG_KERNEL_CLUSTER_ROLE', 'cluster-admin')
-share_gateway_namespace = bool(os.environ.get('EG_SHARED_NAMESPACE', 'False').lower() == 'true')
+
+# TODO: The default for this value should probably flip for single-user/Notebook scenarios (True) vs.
+# multi-tenant/Gateway scenarios (False).  The app config will be available from `kernel_manager.app_config`
+# so we should be able to move this into constructor (or after) and infer from that information.
+shared_namespace = bool(os.environ.get('EG_SHARED_NAMESPACE', 'False').lower() == 'true')
 
 config.load_incluster_config()
 
@@ -33,7 +37,7 @@ class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
         self.kernel_namespace = None
         self.delete_kernel_namespace = False
 
-    def launch_process(self, kernel_cmd, **kwargs):
+    async def launch_process(self, kernel_cmd, **kwargs):
         """Launches the specified process within a Kubernetes environment."""
         # Set env before superclass call so we see these in the debug output
 
@@ -43,7 +47,7 @@ class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
         self.kernel_pod_name = self._determine_kernel_pod_name(**kwargs)
         self.kernel_namespace = self._determine_kernel_namespace(**kwargs)  # will create namespace if not provided
 
-        return super(KubernetesKernelLifecycleManager, self).launch_process(kernel_cmd, **kwargs)
+        return await super(KubernetesKernelLifecycleManager, self).launch_process(kernel_cmd, **kwargs)
 
     def get_initial_states(self):
         """Return list of states indicating container is starting (includes running)."""
@@ -146,7 +150,7 @@ class KubernetesKernelLifecycleManager(ContainerKernelLifecycleManager):
         namespace = kwargs['env'].get('KERNEL_NAMESPACE')
         if namespace is None:
             # check if share gateway namespace is configured...
-            if share_gateway_namespace:  # if so, set to EG namespace
+            if shared_namespace:  # if so, set to EG namespace
                 namespace = enterprise_gateway_namespace
                 self.log.warning("Shared namespace has been configured.  All kernels will reside in EG namespace: {}".
                                  format(namespace))
